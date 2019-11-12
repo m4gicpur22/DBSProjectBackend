@@ -1,65 +1,66 @@
 const express = require('express');
 const path = require('path');
-const config = require('config');
-const SQLdata = require('mssql');
+//const config = require('config');
+// const sql = require('mysql');
+const sql = require('mssql');
+const bodyparser = require('body-parser');
+
+const sqlconnection = require('./Config/DBConnection');
 
 const app = express();
 
 app.use(express.json());
 
-const dbConfig = {
-    //server being hosted here
-    server: 'localhost',
-    database: 'tempdb',
-    user: 'NewUser2',
-    password: 'User2',
-    port: 1434,
+(async () =>
+{
 
-}
+    try {
 
-function getEmp(){
+        var pool1 = await sqlconnection.connect();
+        console.log("Succesfully connected to database!");
+        pool1.close();
 
-    const connection = new SQLdata.ConnectionPool(dbConfig);
+    }
+    catch(err){
+        console.log("Error with connection " + JSON.stringify(err, undefined, 2));
+    }
+    
 
-    connection.connect().then( function(){
+})()
 
-        const req = new SQLdata.Request(connection);
-
-        req.query("SELECT * FROM emp").then(function(recordset){
-            console.log(recordset);
-            connection.close();
-        })
-        .catch(function(err){
-            console.log(err);
-            connection.close();
-        });
-
-        connection.close();
-
-    })
-    .catch(function(err){
-
-        console.log(err);
-
-    });
-
-}
-
-getEmp();
 
 
 //connecting to heroku
-if(process.env.NODE_ENV == 'production') {
+// if(process.env.NODE_ENV == 'production') {
     
-    app.use(express.static('client/build'));
+//     app.use(express.static('client/build'));
 
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(_dirname, 'client', 'build', 'index.html'));
-    });
-}
+//     app.get('*', (req, res) => {
+//         res.sendFile(path.resolve(_dirname, 'client', 'build', 'index.html'));
+//     });
+// }
 
-//ENV variables for connection, backend will start on the port 5000
-//When we run npm run dev(included in our package.json script), our frontend will run on port 3000
-const port = process.env.PORT || 5000;
+//ENV variables for connection, backend will start on the port 3000
+const port = process.env.PORT || 3000;
 
 app.listen(port, () => console.log(`Server has started on port: ${port}`));
+
+app.get('/events', (async (res, req) => {
+
+    try {
+
+        var pool1 = await sqlconnection.connect();
+        let result = await pool1.request()
+            .query("SELECT FirstName FROM newUser WHERE FirstName = 'Affner' ");
+
+        console.log(result);
+
+    }
+    catch(err ){
+
+        console.log("Could not get data back from database with error: " + JSON.stringify(err, undefined, 2));
+        pool1.close();
+
+    }
+
+}));
