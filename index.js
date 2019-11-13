@@ -11,6 +11,7 @@ const app = express();
 
 app.use(express.json());
 
+//Starting the Database
 (async () =>
 {
 
@@ -26,8 +27,14 @@ app.use(express.json());
     }
     
 
-})()
+})();
 
+//we are going to connect our future routes
+
+// app.use('Users', require('./Routes/Users/Users'));
+// app.use('Events', require('./Routes/Events/Events'));
+
+//Setup of routes database
 
 
 //connecting to heroku
